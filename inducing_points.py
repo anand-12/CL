@@ -104,52 +104,61 @@ class InducingPointsGPC:
         return base_probs
 
 def run_inducing_points():
-    n_iterations = 50
+    # Setup parameters
+    n_iterations = 100
     x_test = np.linspace(-6, 6, 100).reshape(-1, 1)
     gpc = InducingPointsGPC(n_inducing=10)
     colors = ['red', 'blue', 'green']
     class_labels = ['Class 1', 'Class 2', 'Class 3']
 
-    plt.figure(figsize=(12, 6))
+    # Run all iterations first to train the model
     for i in range(n_iterations):
         X_new, y_new = generate_single_sample(iteration=i)
         gpc.update(X_new, y_new, i)
-        
-        plt.clf()
-        plt.subplot(2, 1, 1)
-        
-        if i >= 30 and gpc.inducing_points is not None:
-            for class_idx in range(2):
-                mask = gpc.inducing_labels == class_idx
-                plt.scatter(gpc.inducing_points[mask], 
-                           np.zeros_like(gpc.inducing_points[mask]), 
-                           c=colors[class_idx], marker='*', s=200, 
-                           label=f'Inducing {class_labels[class_idx]}')
-        
-        
-        for class_idx in range(gpc.n_classes):
-            mask = gpc.y == class_idx
-            if np.any(mask):
-                plt.scatter(gpc.X[mask], np.zeros_like(gpc.X[mask]), 
-                           c=colors[class_idx], label=class_labels[class_idx])
-        plt.ylim(-1, 1)
-        plt.title(f'Inducing Points - Iteration {i+1}')
-        plt.legend()
-        
-        plt.subplot(2, 1, 2)
-        y_pred = gpc.predict(x_test)
-        for class_idx in range(gpc.n_classes):
-            plt.plot(x_test, y_pred[:, class_idx], 
-                    c=colors[class_idx], label=f'P(class {class_idx})',
-                    linestyle='-', alpha=0.7)
-        
-        plt.ylim(-0.1, 1.1)
-        plt.ylabel('Probability')
-        plt.xlabel('x')
-        plt.legend()
-        plt.title('Class Probabilities')
-        plt.tight_layout()
-        plt.pause(0.5)
+    
+    # Create the final visualization
+    plt.figure(figsize=(12, 6))
+    
+    # Top subplot: Data points and inducing points
+    plt.subplot(2, 1, 1)
+    
+    # Plot inducing points with star markers
+    if gpc.inducing_points is not None:
+        for class_idx in range(2):
+            mask = gpc.inducing_labels == class_idx
+            plt.scatter(gpc.inducing_points[mask], 
+                       np.zeros_like(gpc.inducing_points[mask]), 
+                       c=colors[class_idx], marker='*', s=200, 
+                       label=f'Inducing {class_labels[class_idx]}')
+    
+    # Plot all data points
+    for class_idx in range(gpc.n_classes):
+        mask = gpc.y == class_idx
+        if np.any(mask):
+            plt.scatter(gpc.X[mask], np.zeros_like(gpc.X[mask]), 
+                       c=colors[class_idx], label=class_labels[class_idx])
+    plt.ylim(-1, 1)
+    plt.title('Inducing Points - Final State')
+    plt.legend()
+    
+    # Bottom subplot: Probability distributions
+    plt.subplot(2, 1, 2)
+    y_pred = gpc.predict(x_test)
+    for class_idx in range(gpc.n_classes):
+        plt.plot(x_test, y_pred[:, class_idx], 
+                c=colors[class_idx], label=f'P(class {class_idx})',
+                linestyle='-', alpha=0.7)
+    
+    plt.ylim(-0.1, 1.1)
+    plt.ylabel('Probability')
+    plt.xlabel('x')
+    plt.legend()
+    plt.title('Class Probabilities')
+    plt.tight_layout()
+    
+    # Save the final plot as a high-resolution image
+    plt.savefig('final_inducing_points.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
 if __name__ == "__main__":
     run_inducing_points()

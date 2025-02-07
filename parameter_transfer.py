@@ -86,42 +86,49 @@ class ParameterTransferGPC:
 
 
 def run_parameter_transfer():
-    n_iterations = 80
+    n_iterations = 100
     x_test = np.linspace(-6, 6, 100).reshape(-1, 1)
     gpc = ParameterTransferGPC()
     colors = ['red', 'blue', 'green']
     class_labels = ['Class 1', 'Class 2', 'Class 3']
 
-    plt.figure(figsize=(12, 6))
+    # Run all iterations first
     for i in range(n_iterations):
         X_new, y_new = generate_single_sample(iteration=i)
         gpc.update(X_new, y_new, i)
-        
-        plt.clf()
-        plt.subplot(2, 1, 1)
-        for class_idx in range(gpc.n_classes):
-            mask = gpc.y == class_idx
-            if np.any(mask):
-                plt.scatter(gpc.X[mask], np.zeros_like(gpc.X[mask]), 
-                           c=colors[class_idx], label=class_labels[class_idx])
-        plt.ylim(-1, 1)
-        plt.title(f'Parameter Transfer - Iteration {i+1}')
-        plt.legend()
-        
-        plt.subplot(2, 1, 2)
-        y_pred = gpc.predict(x_test)
-        for class_idx in range(gpc.n_classes):
-            plt.plot(x_test, y_pred[:, class_idx], 
-                    c=colors[class_idx], label=f'P(class {class_idx})',
-                    linestyle='-', alpha=0.7)
-        
-        plt.ylim(-0.1, 1.1)
-        plt.ylabel('Probability')
-        plt.xlabel('x')
-        plt.legend()
-        plt.title('Class Probabilities')
-        plt.tight_layout()
-        plt.pause(0.5)
+    
+    # Create the final plot
+    plt.figure(figsize=(12, 6))
+    
+    # Plot data points
+    plt.subplot(2, 1, 1)
+    for class_idx in range(gpc.n_classes):
+        mask = gpc.y == class_idx
+        if np.any(mask):
+            plt.scatter(gpc.X[mask], np.zeros_like(gpc.X[mask]), 
+                       c=colors[class_idx], label=class_labels[class_idx])
+    plt.ylim(-1, 1)
+    plt.title(f'Parameter Transfer - Final State')
+    plt.legend()
+    
+    # Plot probabilities
+    plt.subplot(2, 1, 2)
+    y_pred = gpc.predict(x_test)
+    for class_idx in range(gpc.n_classes):
+        plt.plot(x_test, y_pred[:, class_idx], 
+                c=colors[class_idx], label=f'P(class {class_idx})',
+                linestyle='-', alpha=0.7)
+    
+    plt.ylim(-0.1, 1.1)
+    plt.ylabel('Probability')
+    plt.xlabel('x')
+    plt.legend()
+    plt.title('Class Probabilities')
+    plt.tight_layout()
+    
+    # Save the plot
+    plt.savefig('final_parameter_transfer.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
 if __name__ == "__main__":
     run_parameter_transfer()
